@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feat/**", "fix/**", "chore/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── 1. Lint & type check ─────────────────────────────────────────────────────
+  lint-and-type:
+    name: Lint & Type Check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dev + test deps
+        run: pip install -e ".[dev,test]"
+      - name: ruff check
+        run: ruff check openguirobot/ tests/
+      - name: ruff format check
+        run: ruff format --check openguirobot/ tests/
+      - name: mypy
+        run: mypy openguirobot/
+
+  # ── 2. Unit tests (Linux, with bwrap) ────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-22.04
+    needs: lint-and-type
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install bubblewrap
+        run: sudo apt-get update && sudo apt-get install -y bubblewrap
+      - name: Install deps
+        run: pip install -e ".[test]"
+      - name: Run unit tests with coverage
+        run: pytest tests/unit/ -v --cov=openguirobot --cov-report=xml --cov-fail-under=70
+        env:
+          OPENAI_API_KEY:    "test-key-not-used-in-unit-tests"
+          ANTHROPIC_API_KEY: "test-key-not-used-in-unit-tests"
+          DASHSCOPE_API_KEY: "test-key-not-used-in-unit-tests"
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+        continue-on-error: true   # don't fail CI if codecov is unreachable
+
+  # ── 3. macOS sandbox smoke test ───────────────────────────────────────────────
+  macos-sandbox:
+    name: macOS Sandbox Smoke Test
+    runs-on: macos-14
+    needs: lint-and-type
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install deps
+        run: pip install -e ".[test]"
+      - name: Run AST guard + sandbox tests
+        run: pytest tests/unit/test_ast_guard.py tests/unit/test_sandbox.py -v
+        env:
+          OPENAI_API_KEY:    "test-key"
+          ANTHROPIC_API_KEY: "test-key"
+          DASHSCOPE_API_KEY: "test-key"
+
+  # ── 4. Android emulator integration (main branch only) ───────────────────────
+  integration-android:
+    name: Integration — Android Emulator
+    runs-on: ubuntu-22.04
+    needs: unit-tests
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install bubblewrap
+        run: sudo apt-get update && sudo apt-get install -y bubblewrap
+      - name: Install Node.js for Appium
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Appium + UiAutomator2 driver
+        run: |
+          npm install -g appium@next
+          appium driver install uiautomator2
+      - name: Run integration tests on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: Nexus 6
+          script: |
+            pip install -e ".[test]"
+            appium &
+            sleep 5
+            pytest tests/integration/ -v -m integration --timeout=300
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}

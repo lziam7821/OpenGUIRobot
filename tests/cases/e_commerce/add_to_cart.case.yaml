@@ -1,0 +1,19 @@
+case_id: e_commerce.add_to_cart
+title: "电商App搜索商品并加入购物车"
+intent: |
+  启动电商App，在搜索框中输入"无线耳机"并执行搜索，
+  点击第一个搜索结果进入商品详情页，点击"加入购物车"按钮。
+platforms:
+  - android
+priority: p1
+budget_usd: 2.0
+timeout_s: 300
+env:
+  app_package: "com.example.ecommerce"
+assertions:
+  - kind: element_exists
+    desc: "购物车图标可见"
+    target: "购物车"
+  - kind: ocr_text
+    desc: "商品名称出现在购物车提示"
+    target: "无线耳机"

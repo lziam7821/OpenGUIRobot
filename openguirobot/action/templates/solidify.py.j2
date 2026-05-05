@@ -1,0 +1,32 @@
+# ruff: noqa
+"""
+Auto-generated from case: {{ case.case_id }}
+Generated at: {{ generated_at }}
+Generator: openguirobot v0.1.0
+Intent hash: {{ intent_hash }}
+
+DO NOT edit by hand.
+To regenerate: ogr explore {{ case.case_id }}
+"""
+import pytest
+from openguirobot.runtime import session, locate, assert_visual
+
+
+@pytest.mark.openguirobot(case_id="{{ case.case_id }}")
+def test_{{ case.snake_name }}(driver):  # type: ignore[no-untyped-def]
+    with session(driver, case_id="{{ case.case_id }}") as s:
+{% for step in steps %}
+        # Step {{ loop.index }}: {{ step.intent }}
+        {{ step.code }}
+{% endfor %}
+{% if case.assertions %}
+        # ── Assertions ──────────────────────────────────────────────────────
+{% for assertion in case.assertions %}
+        # {{ assertion.desc }}
+{% if assertion.kind == "element_exists" %}
+        assert_visual("{{ assertion.target or assertion.desc }}")
+{% elif assertion.kind == "ocr_text" %}
+        assert_visual("{{ assertion.target or assertion.desc }}")
+{% endif %}
+{% endfor %}
+{% endif %}

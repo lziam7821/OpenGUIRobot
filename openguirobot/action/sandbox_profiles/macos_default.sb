@@ -1,0 +1,22 @@
+(version 1)
+(allow default)
+
+; Deny all file writes by default
+(deny file-write*
+    (subpath "/"))
+
+; Allow writes to temp directories only
+(allow file-write*
+    (subpath "/tmp")
+    (subpath "/private/tmp")
+    (subpath "/var/folders"))
+
+; Allow all network outbound (Appium + vision model APIs)
+(allow network-outbound)
+
+; Allow process execution (Python subprocess, etc.)
+(allow process-exec)
+(allow process-fork)
+
+; Allow signal delivery to own process group
+(allow signal (target self))
