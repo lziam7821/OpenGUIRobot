@@ -8,20 +8,26 @@ Usage:
     ogr cases list
     ogr cases show <case_id>
     ogr kb lint [--strict]
+    ogr device list
+    ogr device discover
+    ogr schedule add --case <id> [--cron "0 2 * * *"]
+    ogr schedule list
 """
 from __future__ import annotations
 
 import click
 
 from openguirobot.cli.commands.cases import cases
+from openguirobot.cli.commands.device import device
 from openguirobot.cli.commands.doctor import doctor
 from openguirobot.cli.commands.explore import explore
 from openguirobot.cli.commands.kb import kb
 from openguirobot.cli.commands.replay import replay
+from openguirobot.cli.commands.schedule import schedule
 
 
 @click.group()
-@click.version_option(version="0.2.0", prog_name="ogr")
+@click.version_option(version="0.3.0", prog_name="ogr")
 def app() -> None:
     """OpenGUIRobot — LLM-powered GUI automation test platform."""
 
@@ -31,3 +37,5 @@ app.add_command(explore)
 app.add_command(replay)
 app.add_command(cases)
 app.add_command(kb)
+app.add_command(device)
+app.add_command(schedule)

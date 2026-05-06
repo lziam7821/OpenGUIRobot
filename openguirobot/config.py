@@ -53,11 +53,23 @@ class AppiumConfig(BaseModel):
     url: str = "http://localhost:4723"
 
 
+class GraphConfig(BaseModel):
+    enabled: bool = True
+    db_path: str = "evidence/graph.kuzu"
+
+
+class DeviceConfig(BaseModel):
+    auto_discover: bool = True
+    platforms: list[str] = Field(default_factory=lambda: ["android", "ios", "harmony"])
+
+
 class OGRConfig(BaseModel):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     vision: VisionConfig = Field(default_factory=VisionConfig)
     sandbox: SandboxConfig = Field(default_factory=SandboxConfig)
     appium: AppiumConfig = Field(default_factory=AppiumConfig)
+    graph: GraphConfig = Field(default_factory=GraphConfig)
+    device: DeviceConfig = Field(default_factory=DeviceConfig)
     secrets_provider: str = "env"  # env | vault | aws-secrets-manager
     cases_dir: str = "tests/cases"
     generated_dir: str = "tests/generated"

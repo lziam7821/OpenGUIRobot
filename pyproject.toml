@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "openguirobot"
-version = "0.2.0"
+version = "1.0.0"
 description = "LLM-powered GUI automation test platform for iOS, Android, and Web"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -35,6 +35,9 @@ dependencies = [
     "rapidocr-onnxruntime>=1.3",
     # v0.2: image diff (phash)
     "imagehash>=4.3",
+    # v0.3: operation graph + scheduling
+    "kuzu>=0.4",
+    "apscheduler>=3.10",
     # Observability
     "structlog>=24.1",
     "psutil>=5.9",
@@ -51,11 +54,29 @@ test = [
 ios = [
     "pymobiledevice3>=3.0",
 ]
+harmony = [
+    "adbutils>=2.4",
+]
 jobs = [
     "arq>=0.25",
 ]
 vision-extra = [
     "scikit-image>=0.22",
+]
+bedrock = [
+    "boto3>=1.34",
+]
+vertex = [
+    "google-cloud-aiplatform>=1.50",
+]
+video = [
+    "opencv-python-headless>=4.9",
+]
+business-map = []
+ide = []
+ee = [
+    "python-saml>=3.0",
+    "cryptography>=42.0",
 ]
 dev = [
     "ruff>=0.4",
